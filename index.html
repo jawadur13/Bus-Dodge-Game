@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Bus Dodge Game</title>
+    <style>
+        body {
+            margin: 0;
+            background: #222;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            font-family: sans-serif;
+        }
+
+        #gc {
+            display: block;
+            border-radius: 8px;
+            background: #3a3a3a;
+        }
+
+        #ui {
+            text-align: center;
+            margin: 8px 0 4px;
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        #gameWrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: rgba(0,0,0,0.75);
+            border-radius: 8px;
+        }
+
+            #overlay h2 {
+                color: #fff;
+                font-size: 22px;
+                font-weight: 500;
+                margin: 0 0 6px;
+            }
+
+            #overlay p {
+                color: #ccc;
+                font-size: 14px;
+                margin: 0 0 16px;
+            }
+
+        .overlay-btn {
+            padding: 10px 28px;
+            border: none;
+            background: #f5c400;
+            color: #222;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+            .overlay-btn:hover {
+                background: #ffd700;
+            }
+
+        #controls {
+            display: flex;
+            gap: 24px;
+            justify-content: center;
+            margin: 10px 0 4px;
+        }
+
+        .ctrl-btn {
+            padding: 12px 32px;
+            border: 1px solid #555;
+            background: #333;
+            color: #fff;
+            font-size: 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            user-select: none;
+            touch-action: none;
+        }
+
+            .ctrl-btn:active {
+                background: #444;
+            }
+    </style>
+</head>
+<body>
+
+    <div id="ui">Arrow keys or buttons below · Dodge the red buses!</div>
+    <div id="gameWrap">
+        <canvas id="gc" width="360" height="520"></canvas>
+        <div id="overlay">
+            <h2>Bus Dodge</h2>
+            <p>Dodge the red buses as long as you can!</p>
+            <button class="overlay-btn" id="startBtn">Start Game</button>
+        </div>
+    </div>
+    <div id="controls">
+        <button class="ctrl-btn" id="leftBtn">←</button>
+        <button class="ctrl-btn" id="rightBtn">→</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gc');
+        const ctx = canvas.getContext('2d');
+        const overlay = document.getElementById('overlay');
+        const W = canvas.width, H = canvas.height;
+
+        let bus, enemies, score, running, animId, spawnTimer, roadOffset, difficulty;
+
+        function initGame() {
+            bus = { x: W / 2 - 20, y: H - 110, w: 40, h: 70, speed: 7 };
+            enemies = [];
+            score = 0;
+            running = true;
+            roadOffset = 0;
+            difficulty = 1;
+            overlay.style.display = 'none';
+            if (animId) cancelAnimationFrame(animId);
+            clearTimeout(spawnTimer);
+            scheduleSpawn();
+            loop();
+        }
+
+        function scheduleSpawn() {
+            let interval = Math.max(600, 1500 - score * 8);
+            spawnTimer = setTimeout(() => {
+                if (running) {
+                    spawnEnemy();
+                    scheduleSpawn();
+                }
+            }, interval);
+        }
+
+        function spawnEnemy() {
+            let margin = 20;
+            let x = margin + Math.random() * (W - 40 - margin * 2);
+            let speed = 3 + difficulty * 0.5 + Math.random() * 1.5;
+            enemies.push({ x, y: -80, w: 40, h: 70, speed });
+        }
+
+        const keys = {};
+        document.addEventListener('keydown', e => {
+            keys[e.key] = true;
+            if (['ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+        });
+        document.addEventListener('keyup', e => { keys[e.key] = false; });
+
+        function holdButton(id, key) {
+            const btn = document.getElementById(id);
+            btn.addEventListener('mousedown', () => keys[key] = true);
+            btn.addEventListener('mouseup', () => keys[key] = false);
+            btn.addEventListener('mouseleave', () => keys[key] = false);
+            btn.addEventListener('touchstart', e => { e.preventDefault(); keys[key] = true; });
+            btn.addEventListener('touchend', e => { e.preventDefault(); keys[key] = false; });
+        }
+        holdButton('leftBtn', 'ArrowLeft');
+        holdButton('rightBtn', 'ArrowRight');
+
+        document.getElementById('startBtn').addEventListener('click', initGame);
+
+        function drawRoad() {
+            ctx.fillStyle = '#4a4a4a';
+            ctx.fillRect(0, 0, W, H);
+
+            ctx.strokeStyle = '#666';
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, H); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(W, H); ctx.stroke();
+
+            ctx.strokeStyle = '#fff';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([40, 30]);
+            ctx.lineDashOffset = -roadOffset;
+            ctx.beginPath(); ctx.moveTo(W / 3, 0); ctx.lineTo(W / 3, H); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(W * 2 / 3, 0); ctx.lineTo(W * 2 / 3, H); ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawBusShape(x, y, w, h, bodyColor, windowColor) {
+            ctx.fillStyle = bodyColor;
+            ctx.beginPath();
+            ctx.roundRect(x, y, w, h, 6);
+            ctx.fill();
+
+            ctx.fillStyle = '#222';
+            ctx.fillRect(x + 4, y + h - 14, 10, 10);
+            ctx.fillRect(x + w - 14, y + h - 14, 10, 10);
+
+            ctx.fillStyle = windowColor;
+            ctx.fillRect(x + 5, y + 6, w - 10, 16);
+            ctx.fillRect(x + 5, y + 28, (w - 14) / 2, 12);
+            ctx.fillRect(x + 5 + (w - 14) / 2 + 4, y + 28, (w - 14) / 2, 12);
+
+            ctx.fillStyle = '#ff4';
+            ctx.fillRect(x + 2, y + h - 8, 8, 5);
+            ctx.fillRect(x + w - 10, y + h - 8, 8, 5);
+        }
+
+        function drawHUD() {
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            ctx.beginPath(); ctx.roundRect(8, 8, 110, 32, 6); ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.font = '500 15px sans-serif';
+            ctx.fillText('Score: ' + score, 18, 29);
+
+            ctx.fillStyle = 'rgba(0,0,0,0.45)';
+            ctx.beginPath(); ctx.roundRect(W - 100, 8, 92, 32, 6); ctx.fill();
+            ctx.fillStyle = '#ffd700';
+            ctx.font = '500 13px sans-serif';
+            ctx.fillText('Level ' + Math.floor(difficulty), W - 86, 29);
+        }
+
+        function showGameOver() {
+            running = false;
+            clearTimeout(spawnTimer);
+            overlay.innerHTML = `
+          <h2>Game Over</h2>
+          <p>You scored <strong style="color:#f5c400">${score}</strong> points!</p>
+          <button class="overlay-btn" id="restartBtn">Play Again</button>
+        `;
+            overlay.style.display = 'flex';
+            document.getElementById('restartBtn').addEventListener('click', initGame);
+        }
+
+        function loop() {
+            if (!running) return;
+
+            roadOffset = (roadOffset + 4) % 70;
+            difficulty = 1 + score / 30;
+
+            if (keys['ArrowLeft']) bus.x = Math.max(0, bus.x - bus.speed);
+            if (keys['ArrowRight']) bus.x = Math.min(W - bus.w, bus.x + bus.speed);
+
+            drawRoad();
+            drawBusShape(bus.x, bus.y, bus.w, bus.h, '#f5c400', '#a0d8f0');
+
+            for (let i = enemies.length - 1; i >= 0; i--) {
+                let e = enemies[i];
+                e.y += e.speed;
+                drawBusShape(e.x, e.y, e.w, e.h, '#e03030', '#ffc0c0');
+
+                if (e.y > H) {
+                    enemies.splice(i, 1);
+                    i--;
+                    score++;
+                    continue;
+                }
+
+                if (
+                    bus.x < e.x + e.w - 4 &&
+                    bus.x + bus.w - 4 > e.x + 4 &&
+                    bus.y < e.y + e.h - 4 &&
+                    bus.y + bus.h - 4 > e.y + 4
+                ) {
+                    showGameOver();
+                    return;
+                }
+            }
+
+            drawHUD();
+            animId = requestAnimationFrame(loop);
+        }
+    </script>
+
+</body>
+</html>
