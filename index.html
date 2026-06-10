@@ -32,7 +32,7 @@
             display: inline-block;
         }
 
-        #overlay {
+        #overlay, #passwordOverlay {
             position: absolute;
             top: 0;
             left: 0;
@@ -46,11 +46,15 @@
             border-radius: 8px;
         }
 
-            #overlay h2 {
+        #overlay {
+            display: none;
+        }
+
+            #overlay h2, #passwordOverlay h2 {
                 color: #fff;
                 font-size: 22px;
                 font-weight: 500;
-                margin: 0 0 6px;
+                margin: 0 0 16px;
             }
 
             #overlay p {
@@ -73,6 +77,24 @@
             .overlay-btn:hover {
                 background: #ffd700;
             }
+
+        #passwordOverlay input {
+            padding: 10px;
+            border: none;
+            border-radius: 6px;
+            font-size: 15px;
+            text-align: center;
+            width: 180px;
+            outline: none;
+            margin-bottom: 10px;
+        }
+
+        #passwordOverlay .error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin: 0 0 10px;
+            min-height: 18px;
+        }
 
         #controls {
             display: flex;
@@ -103,6 +125,12 @@
     <div id="ui">Arrow keys or buttons below · Dodge the red buses!</div>
     <div id="gameWrap">
         <canvas id="gc" width="360" height="520"></canvas>
+        <div id="passwordOverlay">
+            <h2>Enter Password</h2>
+            <input type="password" id="passwordInput" placeholder="Password" autofocus>
+            <p class="error" id="passwordError"></p>
+            <button class="overlay-btn" id="passwordBtn">Submit</button>
+        </div>
         <div id="overlay">
             <h2>Bus Dodge</h2>
             <p>Dodge the red buses as long as you can!</p>
@@ -170,6 +198,28 @@
         }
         holdButton('leftBtn', 'ArrowLeft');
         holdButton('rightBtn', 'ArrowRight');
+
+        const passwordOverlay = document.getElementById('passwordOverlay');
+        const passwordInput = document.getElementById('passwordInput');
+        const passwordError = document.getElementById('passwordError');
+
+        function checkPassword() {
+            if (passwordInput.value === 'afnan') {
+                passwordOverlay.style.display = 'none';
+                overlay.style.display = 'flex';
+                passwordError.textContent = '';
+                passwordInput.value = '';
+            } else {
+                passwordError.textContent = 'Incorrect password';
+                passwordInput.value = '';
+                passwordInput.focus();
+            }
+        }
+
+        document.getElementById('passwordBtn').addEventListener('click', checkPassword);
+        passwordInput.addEventListener('keydown', e => {
+            if (e.key === 'Enter') checkPassword();
+        });
 
         document.getElementById('startBtn').addEventListener('click', initGame);
 
