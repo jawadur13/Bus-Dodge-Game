@@ -283,7 +283,7 @@
         const keys = {};
         document.addEventListener('keydown', e => {
             keys[e.key] = true;
-            if (['ArrowLeft', 'ArrowRight'].includes(e.key)) e.preventDefault();
+            if (['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) e.preventDefault();
         });
         document.addEventListener('keyup', e => { keys[e.key] = false; });
 
@@ -536,8 +536,8 @@
             roadOffset = (roadOffset + 4) % 70;
             difficulty = 1 + score / 30;
 
-            if (keys['ArrowLeft']) bus.x = Math.max(0, bus.x - bus.speed);
-            if (keys['ArrowRight']) bus.x = Math.min(W - bus.w, bus.x + bus.speed);
+            if (keys['ArrowLeft'] || keys['a']) bus.x = Math.max(0, bus.x - bus.speed);
+            if (keys['ArrowRight'] || keys['d']) bus.x = Math.min(W - bus.w, bus.x + bus.speed);
 
             drawRoad();
             drawLamborghini(bus.x, bus.y, bus.w, bus.h);
