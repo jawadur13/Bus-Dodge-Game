@@ -285,24 +285,13 @@
             ctx.closePath();
             ctx.fill();
 
-            ctx.fillStyle = '#a0d8f0';
-            ctx.globalAlpha = 0.3;
-            ctx.fillRect(x + 8, y + h - 40, 10, 14);
-            ctx.fillRect(x + w - 18, y + h - 40, 10, 14);
-            ctx.globalAlpha = 1;
-
             if (brotherImg.complete && brotherImg.naturalWidth > 0) {
                 ctx.save();
                 ctx.beginPath();
-                ctx.roundRect(x + 5, y + h - 38, 12, 14, 3);
+                ctx.roundRect(x - 4, y - 14, w + 8, h + 18, 10);
                 ctx.clip();
-                ctx.drawImage(brotherImg, x + 4, y + h - 40, 14, 18);
+                ctx.drawImage(brotherImg, x - 8, y - 22, w + 16, h + 30);
                 ctx.restore();
-                ctx.strokeStyle = '#222';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.roundRect(x + 5, y + h - 38, 12, 14, 3);
-                ctx.stroke();
             }
 
             ctx.fillStyle = '#fff';
