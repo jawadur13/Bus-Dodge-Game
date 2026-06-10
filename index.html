@@ -494,10 +494,21 @@
             ctx.fillText('Score: ' + score, 18, 29);
 
             ctx.fillStyle = 'rgba(0,0,0,0.45)';
-            ctx.beginPath(); ctx.roundRect(W - 100, 8, 92, 32, 6); ctx.fill();
+            ctx.beginPath(); ctx.roundRect(W - 100, 8, 92, 38, 6); ctx.fill();
             ctx.fillStyle = '#ffd700';
             ctx.font = '500 13px sans-serif';
-            ctx.fillText('Level ' + Math.floor(difficulty), W - 86, 29);
+            ctx.fillText('Level ' + Math.floor(difficulty), W - 86, 22);
+            ctx.fillStyle = '#aaa';
+            ctx.font = '500 11px sans-serif';
+            ctx.fillText('Best: ' + getHighScore(), W - 86, 36);
+        }
+
+        function getHighScore() {
+            return parseInt(localStorage.getItem('afnanHighScore')) || 0;
+        }
+
+        function setHighScore(val) {
+            localStorage.setItem('afnanHighScore', val);
         }
 
         function showGameOver() {
@@ -505,9 +516,14 @@
             clearTimeout(spawnTimer);
             stopMusic();
             playGameOverSound();
+
+            let high = getHighScore();
+            if (score > high) { high = score; setHighScore(high); }
+
             overlay.innerHTML = `
           <h2>Game Over</h2>
           <p>You scored <strong style="color:#f5c400">${score}</strong> points!</p>
+          <p style="color:#aaa;font-size:13px;margin:0 0 16px">Best: ${high}</p>
           <button class="overlay-btn" id="restartBtn">Play Again</button>
         `;
             overlay.style.display = 'flex';
