@@ -122,7 +122,7 @@
 </head>
 <body>
 
-    <div id="ui">Arrow keys or buttons below · Dodge the red buses!</div>
+    <div id="ui">Arrow keys or buttons below · Dodge the Minecraft cars!</div>
     <div id="gameWrap">
         <canvas id="gc" width="360" height="520"></canvas>
         <div id="passwordOverlay">
@@ -133,7 +133,7 @@
         </div>
         <div id="overlay">
             <h2>Bus Dodge</h2>
-            <p>Dodge the red buses as long as you can!</p>
+            <p>Dodge the Minecraft cars as long as you can!</p>
             <button class="overlay-btn" id="startBtn">Start Game</button>
         </div>
     </div>
@@ -147,6 +147,11 @@
         const ctx = canvas.getContext('2d');
         const overlay = document.getElementById('overlay');
         const W = canvas.width, H = canvas.height;
+
+        const brotherImg = new Image();
+        brotherImg.src = 'afnan-driving.png';
+
+        const MINECRAFT_FACES = ['creeper', 'steve', 'zombie', 'enderman'];
 
         let bus, enemies, score, running, animId, spawnTimer, roadOffset, difficulty;
 
@@ -178,7 +183,8 @@
             let margin = 20;
             let x = margin + Math.random() * (W - 40 - margin * 2);
             let speed = 3 + difficulty * 0.5 + Math.random() * 1.5;
-            enemies.push({ x, y: -80, w: 40, h: 70, speed });
+            let face = MINECRAFT_FACES[Math.floor(Math.random() * MINECRAFT_FACES.length)];
+            enemies.push({ x, y: -80, w: 40, h: 70, speed, faceType: face });
         }
 
         const keys = {};
@@ -241,24 +247,161 @@
             ctx.setLineDash([]);
         }
 
-        function drawBusShape(x, y, w, h, bodyColor, windowColor) {
-            ctx.fillStyle = bodyColor;
+        function drawLamborghini(x, y, w, h) {
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.roundRect(x + 3, y + 3, w, h, 8);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffd700';
+            ctx.beginPath();
+            ctx.moveTo(x + 2, y + 4);
+            ctx.lineTo(x + w - 2, y + 4);
+            ctx.lineTo(x + w - 9, y + h - 6);
+            ctx.quadraticCurveTo(x + w / 2, y + h + 2, x + 9, y + h - 6);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#c8a500';
+            ctx.beginPath();
+            ctx.moveTo(x + 6, y + 14);
+            ctx.lineTo(x + w - 6, y + 14);
+            ctx.lineTo(x + w - 10, y + h - 14);
+            ctx.quadraticCurveTo(x + w / 2, y + h - 8, x + 10, y + h - 14);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#222';
+            for (let i = 0; i < 5; i++) {
+                ctx.fillRect(x + 6 + i * 7, y + 6, 3, 6);
+            }
+
+            ctx.fillStyle = '#a0d8f0';
+            ctx.beginPath();
+            ctx.moveTo(x + w / 2 - 8, y + h - 26);
+            ctx.quadraticCurveTo(x + w / 2, y + h - 22, x + w / 2 + 8, y + h - 26);
+            ctx.lineTo(x + w - 13, y + h - 6);
+            ctx.lineTo(x + 13, y + h - 6);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#a0d8f0';
+            ctx.globalAlpha = 0.3;
+            ctx.fillRect(x + 8, y + h - 40, 10, 14);
+            ctx.fillRect(x + w - 18, y + h - 40, 10, 14);
+            ctx.globalAlpha = 1;
+
+            if (brotherImg.complete && brotherImg.naturalWidth > 0) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.roundRect(x + 5, y + h - 38, 12, 14, 3);
+                ctx.clip();
+                ctx.drawImage(brotherImg, x + 4, y + h - 40, 14, 18);
+                ctx.restore();
+                ctx.strokeStyle = '#222';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.roundRect(x + 5, y + h - 38, 12, 14, 3);
+                ctx.stroke();
+            }
+
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.moveTo(x + 10, y + h - 5);
+            ctx.lineTo(x + 16, y + h - 1);
+            ctx.lineTo(x + 10, y + h - 1);
+            ctx.closePath();
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(x + w - 10, y + h - 5);
+            ctx.lineTo(x + w - 16, y + h - 1);
+            ctx.lineTo(x + w - 10, y + h - 1);
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = '#e03030';
+            ctx.fillRect(x + 4, y + 6, 6, 3);
+            ctx.fillRect(x + w - 10, y + 6, 6, 3);
+
+            ctx.fillStyle = '#222';
+            ctx.fillRect(x + 1, y + 14, 4, 12);
+            ctx.fillRect(x + w - 5, y + 14, 4, 12);
+            ctx.fillRect(x + 1, y + h - 32, 4, 12);
+            ctx.fillRect(x + w - 5, y + h - 32, 4, 12);
+        }
+
+        function drawMinecraftFace(cx, cy, size, type) {
+            const p = size / 8;
+            function px(i, j, c) { ctx.fillStyle = c; ctx.fillRect(cx + i * p, cy + j * p, p, p); }
+
+            if (type === 'creeper') {
+                ctx.fillStyle = '#4a9c3a'; ctx.fillRect(cx, cy, size, size);
+                const d = '#1a1a1a';
+                px(2,1,d); px(3,1,d); px(4,1,d); px(5,1,d);
+                px(2,2,d); px(5,2,d); px(2,3,d); px(3,3,d); px(4,3,d); px(5,3,d);
+                px(1,5,d); px(2,5,d); px(3,5,d); px(4,5,d); px(5,5,d); px(6,5,d);
+                px(1,6,d); px(6,6,d);
+            } else if (type === 'steve') {
+                ctx.fillStyle = '#c8956a'; ctx.fillRect(cx, cy, size, size);
+                const hair = '#5a3a1a';
+                px(0,0,hair); px(1,0,hair); px(2,0,hair); px(3,0,hair); px(4,0,hair); px(5,0,hair); px(6,0,hair); px(7,0,hair);
+                px(0,1,hair); px(7,1,hair); px(0,2,hair); px(7,2,hair);
+                px(0,3,hair); px(2,3,hair); px(5,3,hair); px(7,3,hair);
+                px(2,4,'#5a7a9c'); px(3,4,'#fff'); px(4,4,'#fff'); px(5,4,'#5a7a9c');
+                px(2,5,'#c8956a'); px(3,5,'#c8956a'); px(4,5,'#c8956a'); px(5,5,'#c8956a');
+                px(2,6,'#222'); px(3,6,'#222'); px(4,6,'#222'); px(5,6,'#222');
+            } else if (type === 'zombie') {
+                ctx.fillStyle = '#3a7a3a'; ctx.fillRect(cx, cy, size, size);
+                const d = '#1a4a1a';
+                px(2,1,d); px(3,1,d); px(4,1,d); px(5,1,d);
+                px(1,2,d); px(2,2,'#e03030'); px(3,2,d); px(4,2,d); px(5,2,'#e03030'); px(6,2,d);
+                px(1,3,d); px(6,3,d);
+                px(2,5,d); px(3,5,d); px(4,5,d); px(5,5,d);
+                px(1,6,d); px(2,6,d); px(5,6,d); px(6,6,d);
+            } else {
+                ctx.fillStyle = '#1a1a2a'; ctx.fillRect(cx, cy, size, size);
+                px(1,1,'#9a40d0'); px(2,1,'#9a40d0'); px(5,1,'#9a40d0'); px(6,1,'#9a40d0');
+                px(1,2,'#9a40d0'); px(6,2,'#9a40d0');
+                px(2,3,'#ff40ff'); px(3,3,'#222'); px(4,3,'#222'); px(5,3,'#ff40ff');
+                px(2,4,'#ff40ff'); px(3,4,'#222'); px(4,4,'#222'); px(5,4,'#ff40ff');
+                px(1,5,'#9a40d0'); px(2,5,'#9a40d0'); px(5,5,'#9a40d0'); px(6,5,'#9a40d0');
+                px(1,6,'#9a40d0'); px(6,6,'#9a40d0');
+            }
+        }
+
+        function drawMinecraftEnemy(x, y, w, h, faceType) {
+            ctx.fillStyle = 'rgba(0,0,0,0.2)';
+            ctx.beginPath();
+            ctx.roundRect(x + 2, y + 2, w, h, 6);
+            ctx.fill();
+
+            ctx.fillStyle = '#8a4a2a';
             ctx.beginPath();
             ctx.roundRect(x, y, w, h, 6);
             ctx.fill();
 
+            ctx.fillStyle = '#6a3a1a';
+            ctx.fillRect(x + 2, y + 4, w - 4, 12);
+
+            ctx.fillStyle = '#4a2a1a';
+            ctx.fillRect(x + 2, y + h - 16, w - 4, 12);
+
+            ctx.fillStyle = '#a0d8f0';
+            ctx.fillRect(x + 5, y + h - 10, 8, 4);
+            ctx.fillRect(x + w - 13, y + h - 10, 8, 4);
+
             ctx.fillStyle = '#222';
-            ctx.fillRect(x + 4, y + h - 14, 10, 10);
-            ctx.fillRect(x + w - 14, y + h - 14, 10, 10);
+            ctx.fillRect(x + 1, y + 18, 4, 14);
+            ctx.fillRect(x + w - 5, y + 18, 4, 14);
+            ctx.fillRect(x + 1, y + h - 36, 4, 14);
+            ctx.fillRect(x + w - 5, y + h - 36, 4, 14);
 
-            ctx.fillStyle = windowColor;
-            ctx.fillRect(x + 5, y + 6, w - 10, 16);
-            ctx.fillRect(x + 5, y + 28, (w - 14) / 2, 12);
-            ctx.fillRect(x + 5 + (w - 14) / 2 + 4, y + 28, (w - 14) / 2, 12);
-
-            ctx.fillStyle = '#ff4';
-            ctx.fillRect(x + 2, y + h - 8, 8, 5);
-            ctx.fillRect(x + w - 10, y + h - 8, 8, 5);
+            const faceSize = w - 10;
+            const faceX = x + 5;
+            const faceY = y + 20;
+            ctx.globalAlpha = 0.9;
+            drawMinecraftFace(faceX, faceY, faceSize, faceType);
+            ctx.globalAlpha = 1;
         }
 
         function drawHUD() {
@@ -297,12 +440,12 @@
             if (keys['ArrowRight']) bus.x = Math.min(W - bus.w, bus.x + bus.speed);
 
             drawRoad();
-            drawBusShape(bus.x, bus.y, bus.w, bus.h, '#f5c400', '#a0d8f0');
+            drawLamborghini(bus.x, bus.y, bus.w, bus.h);
 
             for (let i = enemies.length - 1; i >= 0; i--) {
                 let e = enemies[i];
                 e.y += e.speed;
-                drawBusShape(e.x, e.y, e.w, e.h, '#e03030', '#ffc0c0');
+                drawMinecraftEnemy(e.x, e.y, e.w, e.h, e.faceType);
 
                 if (e.y > H) {
                     enemies.splice(i, 1);
