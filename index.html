@@ -1,575 +1,96 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Afnan's Dodge Game</title>
-    <link rel="icon" href="afnan-driving.png">
-    <style>
-        body {
-            margin: 0;
-            background: #222;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            font-family: sans-serif;
-        }
-
-        #gc {
-            display: block;
-            border-radius: 8px;
-            background: #3a3a3a;
-        }
-
-        #ui {
-            text-align: center;
-            margin: 8px 0 4px;
-            color: #aaa;
-            font-size: 13px;
-        }
-
-        #gameWrap {
-            position: relative;
-            display: inline-block;
-        }
-
-        #overlay, #passwordOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0,0,0,0.75);
-            border-radius: 8px;
-        }
-
-        #overlay {
-            display: none;
-        }
-
-            #overlay h2, #passwordOverlay h2 {
-                color: #fff;
-                font-size: 22px;
-                font-weight: 500;
-                margin: 0 0 16px;
-            }
-
-            #overlay p {
-                color: #ccc;
-                font-size: 14px;
-                margin: 0 0 16px;
-            }
-
-        .overlay-btn {
-            padding: 10px 28px;
-            border: none;
-            background: #f5c400;
-            color: #222;
-            font-size: 15px;
-            font-weight: 600;
-            border-radius: 8px;
-            cursor: pointer;
-        }
-
-            .overlay-btn:hover {
-                background: #ffd700;
-            }
-
-        #passwordOverlay input {
-            padding: 10px;
-            border: none;
-            border-radius: 6px;
-            font-size: 15px;
-            text-align: center;
-            width: 180px;
-            outline: none;
-            margin-bottom: 10px;
-        }
-
-        #passwordOverlay .error {
-            color: #ff6b6b;
-            font-size: 13px;
-            margin: 0 0 10px;
-            min-height: 18px;
-        }
-
-        #controls {
-            display: flex;
-            gap: 24px;
-            justify-content: center;
-            margin: 10px 0 4px;
-        }
-
-        .ctrl-btn {
-            padding: 12px 32px;
-            border: 1px solid #555;
-            background: #333;
-            color: #fff;
-            font-size: 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            user-select: none;
-            touch-action: none;
-        }
-
-            .ctrl-btn:active {
-                background: #444;
-            }
-    </style>
+    <title>Afnan's Game Hub</title>
+    <link rel="icon" href="assets/afnan-driving.png">
+    <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
-    <div id="ui">Arrow keys or buttons below · Dodge the Minecraft cars!</div>
-    <div id="gameWrap">
-        <canvas id="gc" width="360" height="520"></canvas>
-        <div id="passwordOverlay">
-            <h2>Are you Afnan?</h2>
-            <p>Type your name below to start!</p>
-            <input type="text" id="passwordInput" placeholder="Type your name" autofocus>
-            <p class="error" id="passwordError"></p>
-            <button class="overlay-btn" id="passwordBtn">Let's Go!</button>
-        </div>
-        <div id="overlay">
-            <h2>Afnan's Car</h2>
-            <p>Dodge the Minecraft cars as long as you can!</p>
-            <button class="overlay-btn" id="startBtn">Start Game</button>
-        </div>
-    </div>
-    <div id="controls">
-        <button class="ctrl-btn" id="leftBtn">←</button>
-        <button class="ctrl-btn" id="rightBtn">→</button>
+    <div id="passwordScreen">
+        <h2>Are you Afnan?</h2>
+        <p>Type your name below to start!</p>
+        <input type="text" id="passwordInput" placeholder="Type your name" autofocus>
+        <p class="error" id="passwordError"></p>
+        <button class="overlay-btn" id="passwordBtn">Let's Go!</button>
     </div>
 
-    <script>
-        const canvas = document.getElementById('gc');
-        const ctx = canvas.getContext('2d');
-        const overlay = document.getElementById('overlay');
-        const W = canvas.width, H = canvas.height;
+    <div id="hubScreen">
+        <h2 id="hubTitle">Afnan's Game Hub</h2>
+        <div class="hub-grid" id="hubGrid"></div>
+    </div>
 
-        const brotherImg = new Image();
-        brotherImg.src = 'afnan-driving.png';
+    <div id="modeScreen">
+        <h2 id="modeTitle">World Flag Match Quiz</h2>
+        <div class="mode-cards">
+            <div class="mode-card" data-mode="classic">
+                <div class="mode-icon">🏆</div>
+                <div class="mode-name">Classic</div>
+                <div class="mode-desc">Unlimited questions. How many can you get right?</div>
+                <button class="mode-btn mode-classic-btn">Play</button>
+            </div>
+            <div class="mode-card" data-mode="timeattack">
+                <div class="mode-icon">⏱️</div>
+                <div class="mode-name">Time Attack</div>
+                <div class="mode-desc">60 seconds. Answer as fast as you can!</div>
+                <button class="mode-btn mode-timeattack-btn">Play</button>
+            </div>
+            <div class="mode-card" data-mode="survival">
+                <div class="mode-icon">❤️</div>
+                <div class="mode-name">Survival</div>
+                <div class="mode-desc">3 lives. Wrong answers cost you.</div>
+                <button class="mode-btn mode-survival-btn">Play</button>
+            </div>
+        </div>
+        <button id="modeBackBtn">← Back to Menu</button>
+    </div>
 
-        const MINECRAFT_FACES = ['creeper', 'steve', 'zombie', 'enderman'];
+    <div id="gameArea">
+        <div id="gameToolbar">
+            <button id="backBtn">← Back to Menu</button>
+        </div>
+        <div id="ui">Arrow keys or buttons below · Dodge the Minecraft cars!</div>
+        <div id="gameWrap">
+            <canvas id="gc" width="360" height="520"></canvas>
+            <div id="overlay">
+                <h2>Afnan's Car</h2>
+                <p>Dodge the Minecraft cars as long as you can!</p>
+                <button class="overlay-btn" id="startBtn">Start Game</button>
+            </div>
+        </div>
+        <div id="controls">
+            <button class="ctrl-btn" id="leftBtn">←</button>
+            <button class="ctrl-btn" id="rightBtn">→</button>
+        </div>
+    </div>
 
-        let bus, enemies, score, running, animId, spawnTimer, roadOffset, difficulty;
+    <div id="quizArea">
+        <div id="quizToolbar">
+            <button id="quizBackBtn">← Back to Menu</button>
+        </div>
+        <div id="quizHUD">
+            <span class="hud-score">Score: <strong id="quizScore">0</strong></span>
+            <span id="timerDisplay">
+                <span id="timerText">60s</span>
+                <div id="timerBarBg"><div id="timerBar"></div></div>
+            </span>
+            <span id="livesDisplay">
+                <span id="hearts">❤️❤️❤️</span>
+            </span>
+        </div>
+        <div id="mapContainer"></div>
+        <div id="flagGrid"></div>
+        <div id="quizOverlay">
+            <h2>Get Ready!</h2>
+            <p>Match the flag to the country outline</p>
+            <button class="overlay-btn" id="quizStartBtn">Start</button>
+        </div>
+    </div>
 
-        let audioCtx = null;
-        let musicTimer = null;
-        let musicPlaying = false;
-
-        function getAudio() {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            if (audioCtx.state === 'suspended') audioCtx.resume();
-            return audioCtx;
-        }
-
-        function playNote(freq, start, dur, type, vol) {
-            const ctx = getAudio();
-            const o = ctx.createOscillator();
-            const g = ctx.createGain();
-            o.type = type || 'square';
-            o.frequency.value = freq;
-            g.gain.setValueAtTime(vol || 0.12, start);
-            g.gain.exponentialRampToValueAtTime(0.001, start + dur);
-            o.connect(g);
-            g.connect(ctx.destination);
-            o.start(start);
-            o.stop(start + dur);
-        }
-
-        function playScoreSound() {
-            const t = getAudio().currentTime;
-            playNote(880, t, 0.08, 'square', 0.15);
-            playNote(1100, t + 0.06, 0.12, 'square', 0.15);
-        }
-
-        function playGameOverSound() {
-            const t = getAudio().currentTime;
-            playNote(400, t, 0.2, 'sawtooth', 0.18);
-            playNote(300, t + 0.18, 0.2, 'sawtooth', 0.18);
-            playNote(200, t + 0.36, 0.4, 'sawtooth', 0.15);
-        }
-
-        function playStartSound() {
-            const t = getAudio().currentTime;
-            playNote(523, t, 0.1, 'square', 0.12);
-            playNote(659, t + 0.08, 0.1, 'square', 0.12);
-            playNote(784, t + 0.16, 0.1, 'square', 0.12);
-            playNote(1047, t + 0.26, 0.25, 'square', 0.12);
-        }
-
-        function startMusic() {
-            if (musicPlaying) return;
-            musicPlaying = true;
-            const ctx = getAudio();
-            const bpm = 130;
-            const beat = 60 / bpm;
-
-            const melody = [
-                [523, beat], [587, beat], [659, beat * 1.5], [523, beat / 2],
-                [659, beat], [784, beat], [659, beat], [587, beat],
-                [523, beat], [659, beat], [523, beat], [440, beat],
-                [392, beat * 1.5], [440, beat / 2], [523, beat * 2],
-                [659, beat], [784, beat], [880, beat * 1.5], [784, beat / 2],
-                [659, beat], [784, beat], [659, beat], [587, beat],
-                [523, beat], [587, beat], [659, beat], [523, beat],
-                [440, beat * 1.5], [392, beat / 2], [523, beat * 2],
-            ];
-            const bassPattern = [131, 165, 196, 131, 165, 196, 220, 175];
-            const bassBeat = beat * 2;
-
-            function schedule() {
-                if (!musicPlaying) return;
-                const now = ctx.currentTime;
-                let t = now + 0.05;
-                for (const [f, d] of melody) {
-                    playNote(f, t, d * 0.7, 'square', 0.06);
-                    playNote(f / 4, t, d * 0.9, 'triangle', 0.05);
-                    t += d;
-                }
-                for (let i = 0; i < bassPattern.length; i++) {
-                    playNote(bassPattern[i], now + i * bassBeat, bassBeat * 0.8, 'triangle', 0.07);
-                }
-                const dur = t - now;
-                musicTimer = setTimeout(schedule, dur * 1000 - 100);
-            }
-            schedule();
-        }
-
-        function stopMusic() {
-            musicPlaying = false;
-            if (musicTimer) { clearTimeout(musicTimer); musicTimer = null; }
-        }
-
-        function initGame() {
-            bus = { x: W / 2 - 20, y: H - 110, w: 40, h: 70, speed: 7 };
-            enemies = [];
-            score = 0;
-            running = true;
-            roadOffset = 0;
-            difficulty = 1;
-            overlay.style.display = 'none';
-            if (animId) cancelAnimationFrame(animId);
-            clearTimeout(spawnTimer);
-            stopMusic();
-            playStartSound();
-            setTimeout(startMusic, 600);
-            scheduleSpawn();
-            loop();
-        }
-
-        function scheduleSpawn() {
-            let interval = Math.max(600, 1500 - score * 8);
-            spawnTimer = setTimeout(() => {
-                if (running) {
-                    spawnEnemy();
-                    scheduleSpawn();
-                }
-            }, interval);
-        }
-
-        function spawnEnemy() {
-            let margin = 20;
-            let x = margin + Math.random() * (W - 40 - margin * 2);
-            let speed = 3 + difficulty * 0.5 + Math.random() * 1.5;
-            let face = MINECRAFT_FACES[Math.floor(Math.random() * MINECRAFT_FACES.length)];
-            enemies.push({ x, y: -80, w: 40, h: 70, speed, faceType: face });
-        }
-
-        const keys = {};
-        document.addEventListener('keydown', e => {
-            keys[e.key] = true;
-            if (['ArrowLeft', 'ArrowRight', 'a', 'd'].includes(e.key)) e.preventDefault();
-        });
-        document.addEventListener('keyup', e => { keys[e.key] = false; });
-
-        function holdButton(id, key) {
-            const btn = document.getElementById(id);
-            btn.addEventListener('mousedown', () => keys[key] = true);
-            btn.addEventListener('mouseup', () => keys[key] = false);
-            btn.addEventListener('mouseleave', () => keys[key] = false);
-            btn.addEventListener('touchstart', e => { e.preventDefault(); keys[key] = true; });
-            btn.addEventListener('touchend', e => { e.preventDefault(); keys[key] = false; });
-        }
-        holdButton('leftBtn', 'ArrowLeft');
-        holdButton('rightBtn', 'ArrowRight');
-
-        const passwordOverlay = document.getElementById('passwordOverlay');
-        const passwordInput = document.getElementById('passwordInput');
-        const passwordError = document.getElementById('passwordError');
-
-        function checkPassword() {
-            if (passwordInput.value.toLowerCase() === 'afnan') {
-                passwordOverlay.style.display = 'none';
-                overlay.style.display = 'flex';
-                passwordError.textContent = '';
-                passwordInput.value = '';
-            } else {
-                passwordError.textContent = 'Incorrect password';
-                passwordInput.value = '';
-                passwordInput.focus();
-            }
-        }
-
-        document.getElementById('passwordBtn').addEventListener('click', checkPassword);
-        passwordInput.addEventListener('keydown', e => {
-            if (e.key === 'Enter') checkPassword();
-        });
-
-        document.getElementById('startBtn').addEventListener('click', initGame);
-
-        function drawRoad() {
-            ctx.fillStyle = '#4a4a4a';
-            ctx.fillRect(0, 0, W, H);
-
-            ctx.strokeStyle = '#666';
-            ctx.lineWidth = 3;
-            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(0, H); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(W, 0); ctx.lineTo(W, H); ctx.stroke();
-
-            ctx.strokeStyle = '#fff';
-            ctx.lineWidth = 2;
-            ctx.setLineDash([40, 30]);
-            ctx.lineDashOffset = -roadOffset;
-            ctx.beginPath(); ctx.moveTo(W / 3, 0); ctx.lineTo(W / 3, H); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(W * 2 / 3, 0); ctx.lineTo(W * 2 / 3, H); ctx.stroke();
-            ctx.setLineDash([]);
-        }
-
-        function drawLamborghini(x, y, w, h) {
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.beginPath();
-            ctx.roundRect(x + 3, y + 3, w, h, 8);
-            ctx.fill();
-
-            ctx.fillStyle = '#ffd700';
-            ctx.beginPath();
-            ctx.moveTo(x + 2, y + 4);
-            ctx.lineTo(x + w - 2, y + 4);
-            ctx.lineTo(x + w - 9, y + h - 6);
-            ctx.quadraticCurveTo(x + w / 2, y + h + 2, x + 9, y + h - 6);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.fillStyle = '#c8a500';
-            ctx.beginPath();
-            ctx.moveTo(x + 6, y + 14);
-            ctx.lineTo(x + w - 6, y + 14);
-            ctx.lineTo(x + w - 10, y + h - 14);
-            ctx.quadraticCurveTo(x + w / 2, y + h - 8, x + 10, y + h - 14);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.fillStyle = '#222';
-            for (let i = 0; i < 5; i++) {
-                ctx.fillRect(x + 6 + i * 7, y + 6, 3, 6);
-            }
-
-            ctx.fillStyle = '#a0d8f0';
-            ctx.beginPath();
-            ctx.moveTo(x + w / 2 - 8, y + h - 26);
-            ctx.quadraticCurveTo(x + w / 2, y + h - 22, x + w / 2 + 8, y + h - 26);
-            ctx.lineTo(x + w - 13, y + h - 6);
-            ctx.lineTo(x + 13, y + h - 6);
-            ctx.closePath();
-            ctx.fill();
-
-            if (brotherImg.complete && brotherImg.naturalWidth > 0) {
-                ctx.save();
-                ctx.beginPath();
-                ctx.roundRect(x - 4, y - 14, w + 8, h + 18, 10);
-                ctx.clip();
-                ctx.drawImage(brotherImg, x - 8, y - 22, w + 16, h + 30);
-                ctx.restore();
-            }
-
-            ctx.fillStyle = '#fff';
-            ctx.beginPath();
-            ctx.moveTo(x + 10, y + h - 5);
-            ctx.lineTo(x + 16, y + h - 1);
-            ctx.lineTo(x + 10, y + h - 1);
-            ctx.closePath();
-            ctx.fill();
-            ctx.beginPath();
-            ctx.moveTo(x + w - 10, y + h - 5);
-            ctx.lineTo(x + w - 16, y + h - 1);
-            ctx.lineTo(x + w - 10, y + h - 1);
-            ctx.closePath();
-            ctx.fill();
-
-            ctx.fillStyle = '#e03030';
-            ctx.fillRect(x + 4, y + 6, 6, 3);
-            ctx.fillRect(x + w - 10, y + 6, 6, 3);
-
-            ctx.fillStyle = '#222';
-            ctx.fillRect(x + 1, y + 14, 4, 12);
-            ctx.fillRect(x + w - 5, y + 14, 4, 12);
-            ctx.fillRect(x + 1, y + h - 32, 4, 12);
-            ctx.fillRect(x + w - 5, y + h - 32, 4, 12);
-        }
-
-        function drawMinecraftFace(cx, cy, size, type) {
-            const p = size / 8;
-            function px(i, j, c) { ctx.fillStyle = c; ctx.fillRect(cx + i * p, cy + j * p, p, p); }
-
-            if (type === 'creeper') {
-                ctx.fillStyle = '#4a9c3a'; ctx.fillRect(cx, cy, size, size);
-                const d = '#1a1a1a';
-                px(2,1,d); px(3,1,d); px(4,1,d); px(5,1,d);
-                px(2,2,d); px(5,2,d); px(2,3,d); px(3,3,d); px(4,3,d); px(5,3,d);
-                px(1,5,d); px(2,5,d); px(3,5,d); px(4,5,d); px(5,5,d); px(6,5,d);
-                px(1,6,d); px(6,6,d);
-            } else if (type === 'steve') {
-                ctx.fillStyle = '#c8956a'; ctx.fillRect(cx, cy, size, size);
-                const hair = '#5a3a1a';
-                px(0,0,hair); px(1,0,hair); px(2,0,hair); px(3,0,hair); px(4,0,hair); px(5,0,hair); px(6,0,hair); px(7,0,hair);
-                px(0,1,hair); px(7,1,hair); px(0,2,hair); px(7,2,hair);
-                px(0,3,hair); px(2,3,hair); px(5,3,hair); px(7,3,hair);
-                px(2,4,'#5a7a9c'); px(3,4,'#fff'); px(4,4,'#fff'); px(5,4,'#5a7a9c');
-                px(2,5,'#c8956a'); px(3,5,'#c8956a'); px(4,5,'#c8956a'); px(5,5,'#c8956a');
-                px(2,6,'#222'); px(3,6,'#222'); px(4,6,'#222'); px(5,6,'#222');
-            } else if (type === 'zombie') {
-                ctx.fillStyle = '#3a7a3a'; ctx.fillRect(cx, cy, size, size);
-                const d = '#1a4a1a';
-                px(2,1,d); px(3,1,d); px(4,1,d); px(5,1,d);
-                px(1,2,d); px(2,2,'#e03030'); px(3,2,d); px(4,2,d); px(5,2,'#e03030'); px(6,2,d);
-                px(1,3,d); px(6,3,d);
-                px(2,5,d); px(3,5,d); px(4,5,d); px(5,5,d);
-                px(1,6,d); px(2,6,d); px(5,6,d); px(6,6,d);
-            } else {
-                ctx.fillStyle = '#1a1a2a'; ctx.fillRect(cx, cy, size, size);
-                px(1,1,'#9a40d0'); px(2,1,'#9a40d0'); px(5,1,'#9a40d0'); px(6,1,'#9a40d0');
-                px(1,2,'#9a40d0'); px(6,2,'#9a40d0');
-                px(2,3,'#ff40ff'); px(3,3,'#222'); px(4,3,'#222'); px(5,3,'#ff40ff');
-                px(2,4,'#ff40ff'); px(3,4,'#222'); px(4,4,'#222'); px(5,4,'#ff40ff');
-                px(1,5,'#9a40d0'); px(2,5,'#9a40d0'); px(5,5,'#9a40d0'); px(6,5,'#9a40d0');
-                px(1,6,'#9a40d0'); px(6,6,'#9a40d0');
-            }
-        }
-
-        function drawMinecraftEnemy(x, y, w, h, faceType) {
-            ctx.fillStyle = 'rgba(0,0,0,0.2)';
-            ctx.beginPath();
-            ctx.roundRect(x + 2, y + 2, w, h, 6);
-            ctx.fill();
-
-            ctx.fillStyle = '#8a4a2a';
-            ctx.beginPath();
-            ctx.roundRect(x, y, w, h, 6);
-            ctx.fill();
-
-            ctx.fillStyle = '#6a3a1a';
-            ctx.fillRect(x + 2, y + 4, w - 4, 12);
-
-            ctx.fillStyle = '#4a2a1a';
-            ctx.fillRect(x + 2, y + h - 16, w - 4, 12);
-
-            ctx.fillStyle = '#a0d8f0';
-            ctx.fillRect(x + 5, y + h - 10, 8, 4);
-            ctx.fillRect(x + w - 13, y + h - 10, 8, 4);
-
-            ctx.fillStyle = '#222';
-            ctx.fillRect(x + 1, y + 18, 4, 14);
-            ctx.fillRect(x + w - 5, y + 18, 4, 14);
-            ctx.fillRect(x + 1, y + h - 36, 4, 14);
-            ctx.fillRect(x + w - 5, y + h - 36, 4, 14);
-
-            const faceSize = w - 10;
-            const faceX = x + 5;
-            const faceY = y + 20;
-            ctx.globalAlpha = 0.9;
-            drawMinecraftFace(faceX, faceY, faceSize, faceType);
-            ctx.globalAlpha = 1;
-        }
-
-        function drawHUD() {
-            ctx.fillStyle = 'rgba(0,0,0,0.45)';
-            ctx.beginPath(); ctx.roundRect(8, 8, 110, 32, 6); ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.font = '500 15px sans-serif';
-            ctx.fillText('Score: ' + score, 18, 29);
-
-            ctx.fillStyle = 'rgba(0,0,0,0.45)';
-            ctx.beginPath(); ctx.roundRect(W - 100, 8, 92, 38, 6); ctx.fill();
-            ctx.fillStyle = '#ffd700';
-            ctx.font = '500 13px sans-serif';
-            ctx.fillText('Level ' + Math.floor(difficulty), W - 86, 22);
-            ctx.fillStyle = '#aaa';
-            ctx.font = '500 11px sans-serif';
-            ctx.fillText('Best: ' + getHighScore(), W - 86, 36);
-        }
-
-        function getHighScore() {
-            return parseInt(localStorage.getItem('afnanHighScore')) || 0;
-        }
-
-        function setHighScore(val) {
-            localStorage.setItem('afnanHighScore', val);
-        }
-
-        function showGameOver() {
-            running = false;
-            clearTimeout(spawnTimer);
-            stopMusic();
-            playGameOverSound();
-
-            let high = getHighScore();
-            if (score > high) { high = score; setHighScore(high); }
-
-            overlay.innerHTML = `
-          <h2>Game Over</h2>
-          <p>You scored <strong style="color:#f5c400">${score}</strong> points!</p>
-          <p style="color:#aaa;font-size:13px;margin:0 0 16px">Best: ${high}</p>
-          <button class="overlay-btn" id="restartBtn">Play Again</button>
-        `;
-            overlay.style.display = 'flex';
-            document.getElementById('restartBtn').addEventListener('click', initGame);
-        }
-
-        function loop() {
-            if (!running) return;
-
-            roadOffset = (roadOffset + 4) % 70;
-            difficulty = 1 + score / 30;
-
-            if (keys['ArrowLeft'] || keys['a']) bus.x = Math.max(0, bus.x - bus.speed);
-            if (keys['ArrowRight'] || keys['d']) bus.x = Math.min(W - bus.w, bus.x + bus.speed);
-
-            drawRoad();
-            drawLamborghini(bus.x, bus.y, bus.w, bus.h);
-
-            for (let i = enemies.length - 1; i >= 0; i--) {
-                let e = enemies[i];
-                e.y += e.speed;
-                drawMinecraftEnemy(e.x, e.y, e.w, e.h, e.faceType);
-
-                if (e.y > H) {
-                    enemies.splice(i, 1);
-                    i--;
-                    score++;
-                    playScoreSound();
-                    continue;
-                }
-
-                if (
-                    bus.x < e.x + e.w - 4 &&
-                    bus.x + bus.w - 4 > e.x + 4 &&
-                    bus.y < e.y + e.h - 4 &&
-                    bus.y + bus.h - 4 > e.y + 4
-                ) {
-                    showGameOver();
-                    return;
-                }
-            }
-
-            drawHUD();
-            animId = requestAnimationFrame(loop);
-        }
-    </script>
-
+    <script src="js/audio.js"></script>
+    <script src="js/countries.js"></script>
+    <script src="js/games/dodge.js"></script>
+    <script src="js/games/flag-quiz.js"></script>
+    <script src="js/app.js"></script>
 </body>
 </html>
